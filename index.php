@@ -1,61 +1,169 @@
+<?php  get_header(); ?>
+
+
+
+<div class="clr space"></div>
+
+
+<ul class="nav nav-tabs">
 <?php
-/**
- * The main template file
- *
- * This is the most generic template file in a WordPress theme
- * and one of the two required files for a theme (the other being style.css).
- * It is used to display a page when nothing more specific matches a query.
- * e.g., it puts together the home page when no home.php file exists.
- *
- * Learn more: {@link https://codex.wordpress.org/Template_Hierarchy}
- *
- * @package WordPress
- * @subpackage Twenty_Fifteen
- * @since Twenty Fifteen 1.0
- */
+$args = array(
+'taxonomy' => 'project-categories',
+'orderby' => 'name',
+'order'   => 'ASC'
+ );
+$cats = get_categories($args);
+foreach($cats as $cat) {
+?>
+<li><a data-toggle="tab" href="#menu<?php echo $cat->cat_ID; ?>"><?php echo $cat->name; ?></a></li>
+<?php  } ?>
+  
+</ul>
 
-get_header(); ?>
+<div class="tab-content">
 
-	<div id="primary" class="content-area">
-		<main id="main" class="site-main" role="main">
+<div id="home" class="tab-pane fade in active">
 
-		<?php if ( have_posts() ) : ?>
 
-			<?php if ( is_home() && ! is_front_page() ) : ?>
-				<header>
-					<h1 class="page-title screen-reader-text"><?php single_post_title(); ?></h1>
-				</header>
-			<?php endif; ?>
 
-			<?php
-			// Start the loop.
-			while ( have_posts() ) : the_post();
+<?php
+$the_query = new WP_Query( array( 'post_type' => 'custom_posts', 'posts_per_page' => 9 , 'paged' => get_query_var('paged') ? get_query_var('paged') : 1) ); ?>
+<?php while ($the_query -> have_posts()) : $the_query -> the_post();  $date = get_the_date("F j, Y");    ?>
 
-				/*
-				 * Include the Post-Format-specific template for the content.
-				 * If you want to override this in a child theme, then include a file
-				 * called content-___.php (where ___ is the Post Format name) and that will be used instead.
-				 */
-				get_template_part( 'content', get_post_format() );
 
-			// End the loop.
-			endwhile;
+<div class="col-md-4">
+<div class="blog-short">
+<div class="blog_image_thmb_box">
+<?php the_post_thumbnail( 'full' );   ?>
+</div>
+<span class="text-upper">
+<?php
+$category = get_the_terms( $post->ID, 'project-categories' );     
+foreach ( $category as $cat){
+   $cat_name= $cat->name; 
+}
 
-			// Previous/next page navigation.
-			the_posts_pagination( array(
-				'prev_text'          => __( 'Previous page', 'twentyfifteen' ),
-				'next_text'          => __( 'Next page', 'twentyfifteen' ),
-				'before_page_number' => '<span class="meta-nav screen-reader-text">' . __( 'Page', 'twentyfifteen' ) . ' </span>',
-			) );
+echo  $cat_name;
+?></span>
+<h3><?php  the_title();?></h3>
+<span><?php echo $date; ?> <span class="slah_colr">/</span> <?php $totalcomments = get_comments_number(); echo $totalcomments; ?> Comment  </span>
+<p><?php the_excerpt(); ?></p>
+<a href="<?php the_permalink(); ?>" class="read-more">Read More</a>
+</div>
+</div>
 
-		// If no content, include the "No posts found" template.
-		else :
-			get_template_part( 'content', 'none' );
+<?php
+endwhile;
+?>
 
-		endif;
-		?>
+<div class="col-md-12 text-center">
+<?php
+$big = 999999999; // need an unlikely integer
+ echo paginate_links( array(
+    'base' => str_replace( $big, '%#%', get_pagenum_link( $big ) ),
+    'format' => '?paged=%#%',
+    'current' => max( 1, get_query_var('paged') ),
+    'total' => $the_query->max_num_pages
+) );
 
-		</main><!-- .site-main -->
-	</div><!-- .content-area -->
+wp_reset_postdata();
+?>
+</div>
 
-<?php get_footer(); ?>
+</div>
+
+
+
+
+
+<?php
+$args = array(
+'taxonomy' => 'project-categories',
+'orderby' => 'name',
+'order'   => 'ASC'
+ );
+$cats = get_categories($args);
+foreach($cats as $cat) {
+?>
+
+<div id="menu<?php echo $cat->cat_ID; ?>" class="tab-pane fade">
+
+<?php $cat_id=$cat->cat_ID; ?>
+
+
+
+
+
+
+
+<?php
+$args = array(
+    'post_type' => 'custom_posts',
+    'post_status' => 'publish',
+    'posts_per_page' => -1,
+    'tax_query' => array(
+        array(
+            'taxonomy' => 'project-categories',
+            'field' => 'id',
+            'terms' => $cat_id,
+        )
+    )
+);
+$the_query = new WP_Query( $args );
+while ( $the_query->have_posts() ) : $the_query->the_post();
+    //content 
+
+?>
+
+
+
+<div class="col-md-4">
+<div class="blog-short">
+<div class="blog_image_thmb_box">
+<?php the_post_thumbnail( 'full' );   ?>
+</div>
+<span class="text-upper">
+<?php
+$category = get_the_terms( $post->ID, 'project-categories' );     
+foreach ( $category as $cat){
+   $cat_name= $cat->name; 
+}
+
+echo  $cat_name;
+?></span>
+<h3><?php  the_title();?></h3>
+<span><?php echo $date; ?> <span class="slah_colr">/</span> <?php $totalcomments = get_comments_number(); echo $totalcomments; ?> Comment  </span>
+<p><?php the_excerpt(); ?></p>
+<a href="<?php the_permalink(); ?>" class="read-more">Read More</a>
+</div>
+</div>
+
+
+
+
+<?php
+endwhile;
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+<?php  } ?>
+
+
+
+</div>
+
+
+<?php  get_footer(); ?>
